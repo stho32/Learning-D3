@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <title>D3.js example</title>
+
+  <!-- Bootstrap -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+  <h1>Example 2</h1>
+  <p>Source: http://bl.ocks.org/enjalot/1429426, adapted to v5 of d3 and more modern js</p>
+
+  <div id="demo">
+    <div id="buttons">
+      <button id="data1">Set Data to data 1</button>
+      <button id="data2">Set Data to data 2</button>
+      <br>
+      <button id="random">Make Random Data</button>
+      <input id="count" value=10>
+    </div>
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="svg"></svg>
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/d3.min.js"></script>
+
+  <script>
+
+    // DATA
+    let data1 = [5, 20, 55, 60, 89];
+    let data2 = [35, 80, 35, 90, 19, 39, 99];
+
+    function random(count) {
+      let values = [];
+      for (i = 0; i < count; i++) {
+        values.push(Math.random() * 100)
+      }
+      return values;
+    }
+
+    function UpdateBarChart(data, graphWidth, graphHeight) {
+      console.log("Updating Bar Chart...");
+
+      let maximumValue = d3.max(data);
+
+      x = d3.scaleLinear()
+            .domain([0, maximumValue]) // Reichweite der Werte
+            .range([0, graphWidth]);   // Ausdehnung grafisch
+
+      y = d3.scaleBand()
+            .domain(d3.range(data.length)) // Reichweite der Werte
+            .range([0, graphHeight])       // Ausdehnung grafisch
+            .paddingInner(0.5);            // Abstand zwischen den Bändern
+
+      let barchart = d3.select("#barchart");
+
+      /* "update" - the initial starting point */
+      let bars = barchart
+          .selectAll("rect.bar")
+          .data(data)
+          .attr("fill", "#0a0")
+          .attr("stroke", "#050");
+
+      // enter (Alle neuen Objekte, die hinzukommen...)
+      bars.enter()
+        .append("svg:rect")
+        .attr("class", "bar")
+        .attr("fill", "#800")
+        .attr("stroke", "#800");
+
+      // exit (Alle Objekte, die entfernt werden...)
+      bars.exit()
+        .transition()
+        .duration(300)
+        .ease(d3.easeExp) 
+        .attr("width", 0)
+        .remove();
+
+      bars
+        .attr("stroke-width", 4)
+        .transition()
+        .duration(300)
+        .ease(d3.easeQuad) 
+        .attr("width", x)
+        .attr("height", y.bandwidth())
+        .attr("transform", function (d, i) {
+          return "translate(" + [0, y(i)] + ")"
+        })
+
+    }
+
+    function setupSvgArea( 
+        graphWidth, 
+        graphHeight, 
+        extraBorderX, 
+        extraBorderY,
+        borderColor = "black",
+        backgroundColor = "none" ) {
+      //setup the svg
+      var svgArea = d3.select("#svg")
+                      .attr("width", graphWidth + extraBorderX)
+                      .attr("height", graphHeight + extraBorderY);
+
+      svgArea.append("svg:rect")
+             .attr("width", "100%")
+             .attr("height", "100%")
+             .attr("stroke", borderColor)
+             .attr("stroke-width", "2px")
+             .attr("fill", backgroundColor);
+
+      svgArea.append("svg:g")
+         .attr("id", "barchart")
+         .attr("transform", "translate(50,50)")
+    }
+
+    function init() {
+
+      let graphWidth = 400
+      let graphHeight = 400
+
+      let svgAreaExtraBorderX = 100;
+      let svgAreaExtraBorderY = 100;
+
+      let borderColor = "#000000";
+      let backgroundColor = "#eeeeee";
+
+      setupSvgArea(
+        graphWidth, graphHeight, 
+        svgAreaExtraBorderX, svgAreaExtraBorderY, 
+        borderColor, backgroundColor);
+
+      //setup our ui
+      d3.select("#data1").on("click", function (value, index) {
+          UpdateBarChart(data1, graphWidth, graphHeight);
+        });
+
+      d3.select("#data2").on("click", function (value, index) {
+          UpdateBarChart(data2, graphWidth, graphHeight);
+        });
+
+      d3.select("#random").on("click", function (value, index) {
+          let count = document.getElementById("count").value;
+
+          UpdateBarChart(random(count), graphWidth, graphHeight);
+        });
+
+      // Starting point
+      UpdateBarChart(data1, graphWidth, graphHeight);
+    }
+
+    init();
+
+  </script>
+</body>
+
+</html>
