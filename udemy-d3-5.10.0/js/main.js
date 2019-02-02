@@ -5,5 +5,14 @@
 */
 
 d3.json("data/data.json").then(function(data){
+
+	/* Step 1: Filter out null values */
+	data.forEach(d => {
+		d.countries = d.countries.filter(country => 
+										 country.income   != null && 
+										 country.life_exp != null);
+	});
+
 	console.log(data);
-})
+
+});
